@@ -5,6 +5,16 @@ from background import ParallaxLayer
 from Player import Player
 from pygame.locals import *
 
+def generate_floor_repeat(y, screen_width, tile_width, image_location, 
+                          movement_speed):
+    x = 0
+    layers = []
+    while x < screen_width:
+        layer = ParallaxLayer(x, y, image_location, movement_speed)
+        layers.append(layer)
+        x += tile_width
+    return layers
+
 def main():
     pygame.init()
     FPS = 60
