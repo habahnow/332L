@@ -2,6 +2,7 @@ import os
 import pygame
 import sys 
 from background import ParallaxLayer
+from background import ParallaxLayers
 from Player import Player
 from pygame.locals import *
 
@@ -26,6 +27,7 @@ def main():
     pygame.display.set_caption("Final Project")
     
     active_sprite_list = pygame.sprite.Group()
+    ground_group = pygame.sprite.Group()
     
     player = Player(350, 350)
     
@@ -35,15 +37,25 @@ def main():
     s_pressed = False
     f_pressed = False
     
-    #### TODO: delete
+    y = [SURFACE_HEIGHT - 128]
+    tile_width = [256]
+    
     script_dir = sys.path[0]
     image_directory = os.path.join(script_dir, 'Sprites/ground.bmp')
+    image_location = [image_directory]
+    movement_speed = [5]
     
+    layers = ParallaxLayers( y, SURFACE, tile_width, image_location, 
+                             movement_speed)
+    
+    #### TODO: delete
+    """ 
     y = SURFACE_HEIGHT - 128
     x = 0
     layer = ParallaxLayer(x, y, image_directory, 5)
-    active_sprite_list.add(layer)
+    #    active_sprite_list.add(layer)
     ####
+    """
     while True: 
         for event in pygame.event.get():    
             
@@ -86,6 +98,11 @@ def main():
         active_sprite_list.update()
         SURFACE.fill(pygame.Color(4, 66, 13))    
         active_sprite_list.draw(SURFACE)
+        ground_group.empty()
+        new_layer = layers.update()
+        for i in new_layer:
+            ground_group.add(i)
+        ground_group.update(SURFACE)
         fps_clock.tick(FPS)
     
                 
