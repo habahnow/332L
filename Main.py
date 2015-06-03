@@ -6,16 +6,6 @@ from background import ParallaxLayers
 from Player import Player
 from pygame.locals import *
 
-def generate_floor_repeat(y, screen_width, tile_width, image_location, 
-                          movement_speed):
-    x = 0
-    layers = []
-    while x < screen_width:
-        layer = ParallaxLayer(x, y, image_location, movement_speed)
-        layers.append(layer)
-        x += tile_width
-    return layers
-
 def main():
     pygame.init()
     FPS = 60
@@ -27,7 +17,6 @@ def main():
     pygame.display.set_caption("Final Project")
     
     active_sprite_list = pygame.sprite.Group()
-    ground_group = pygame.sprite.Group()
     
     player = Player(350, 350)
     
@@ -37,17 +26,23 @@ def main():
     s_pressed = False
     f_pressed = False
     
-    y = [SURFACE_HEIGHT - 128]
-    tile_width = [256]
+    # Creating the ground layers.
+    y = SURFACE_HEIGHT - 128# 128 is the floor image's height
     
     script_dir = sys.path[0]
-    image_directory = os.path.join(script_dir, 'Sprites/ground.bmp')
-    image_location = [image_directory]
-    movement_speed = [5]
+    image_location = 'Sprites/ground.bmp'
+    image_directory = os.path.join(script_dir, image_location)
+        
+    image = pygame.image.load(image_directory)
+    movement_speed = -1
     
-    layers = ParallaxLayers( y, SURFACE, tile_width, image_location, 
-                             movement_speed)
+    layer = ParallaxLayer( y, image, movement_speed)
     
+    layers = ParallaxLayers(SURFACE)
+    fill_horizontally = True
+    layers.add_layer(layer, y, fill_horizontally)
+    
+    background_groups = layers.get_groups()
     #### TODO: delete
     """ 
     y = SURFACE_HEIGHT - 128
@@ -58,7 +53,6 @@ def main():
     """
     while True: 
         for event in pygame.event.get():    
-            
             
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -96,16 +90,14 @@ def main():
             
         
         active_sprite_list.update()
+        
         SURFACE.fill(pygame.Color(4, 66, 13))    
         active_sprite_list.draw(SURFACE)
-        ground_group.empty()
-        new_layer = layers.update()
-        for i in new_layer:
-            ground_group.add(i)
-        ground_group.update(SURFACE)
+        group = background_groups[0]
+        group.draw(SURFACE)
+            
         fps_clock.tick(FPS)
     
-                
                 
         pygame.display.update()
         

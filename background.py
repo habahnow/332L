@@ -5,15 +5,12 @@ from pygame.locals import *
 
 class ParallaxLayer(pygame.sprite.Sprite):
     
-    def __init__(self, y, image_location, movement_rate):
+    def __init__(self, y, image, movement_rate):
         pygame.sprite.Sprite.__init__(self)
         self.y = y
         self.movement_rate = movement_rate
         
-        script_dir = sys.path[0]
-        image_directory = os.path.join(script_dir, image_location)
-        
-        self.image = pygame.image.load(image_directory)
+        self.image = image
         self.rect = self.image.get_rect()
         self.rect.top = y
         self.rect.left = 0
@@ -38,13 +35,13 @@ class ParallaxLayers():
     
     def __init__(self, screen):
         self.__screen = screen
-        self.__width = screen.get_width
+        self.__width = screen.get_width()
         
     def add_layer(self, layer, height, fill):
         if fill:
             extra_width = layer.width - 1
             total_tile_coverage = extra_width + self.__width
-            group = pygame.sprite.Group
+            group = pygame.sprite.Group()
             layer.set_position(0)
             group.add(layer)
             left_position = layer.width
@@ -54,13 +51,13 @@ class ParallaxLayers():
                 new_layer.set_position(left_position)
                 left_position += layer.width
                 group.add(new_layer)
-            group_list.append(group) 
+            self.__group_list.append(group) 
         
     def decrease_speed(self):
         print ('decrease speed')
         
     def get_groups(self):
-        return group_list[:]
+        return self.__group_list
         
     def increase_speed(self):
         print ('increase speed')

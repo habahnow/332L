@@ -201,15 +201,12 @@ class Player(pygame.sprite.Sprite):
             self.__is_jumping = False
             self.image = self.__movement_frames[2]
             self.__height_change = 0
-            print (self.__highest)
             self.__highest.sort()
             print (self.__highest[0])
-            print ('length: ' + str(len(self.__highest)))
         else:
             self.__height_change = self.__height_change + self.__gravity
             self.rect.y = (self.__height_change * self.__jump_speed_modifier 
                            + self.rect.y)
-            print (self.__highest.append(self.rect.y))
             
     
     def __run(self):
