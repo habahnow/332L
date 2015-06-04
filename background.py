@@ -5,15 +5,17 @@ from pygame.locals import *
 
 class ParallaxLayer(pygame.sprite.Sprite):
     
-    def __init__(self, y, image, movement_rate):
+    def __init__(self,x, y, image, movement_rate):
         pygame.sprite.Sprite.__init__(self)
         self.y = y
+        self.__initial_position = x
+        
         self.movement_rate = movement_rate
         
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.top = y
-        self.rect.left = 0
+        self.rect.left = x
         self.width = self.rect.width
         
     def change_speed(self, x):
@@ -23,11 +25,17 @@ class ParallaxLayer(pygame.sprite.Sprite):
         self.rect.left = x
         
     def update(self):
-        self.rect.left += self.movement_rate
+        next_position = self.rect.x + self.movement_rate
+        if next_position <= self.__initial_position - self.rect.width:
+            self.set_position(self.rect.left + self.rect.width)
+        else:
+            self.rect.left += self.movement_rate
+       
             
         
 class ParallaxLayers():
     
+    __list_of_layers = []
     __group_list =[]
     __isPaused = False
     __isSlow = False
@@ -42,22 +50,23 @@ class ParallaxLayers():
             extra_width = layer.width - 1
             total_tile_coverage = extra_width + self.__width
             group = pygame.sprite.Group()
-            layer.set_position(0)
+            layers = []
             group.add(layer)
             left_position = layer.width
             while left_position <= total_tile_coverage:
-                new_layer = ParallaxLayer(layer.y, layer.image,
+                new_layer = ParallaxLayer(left_position, layer.y, layer.image,
                                           layer.movement_rate)
-                new_layer.set_position(left_position)
                 left_position += layer.width
                 group.add(new_layer)
-            self.__group_list.append(group) 
+                layers.append(new_layer)
+            self.__group_list.append(group)
+            self.__list_of_layers.append(layers) 
         
     def decrease_speed(self):
         print ('decrease speed')
         
     def get_groups(self):
-        return self.__group_list
+        return self.__group_list[:]
         
     def increase_speed(self):
         print ('increase speed')
@@ -68,6 +77,3 @@ class ParallaxLayers():
     def resume(self):
         print ('resume')
        
-    def update (self):
-        self.rect.left -= self.movement_rate
-        

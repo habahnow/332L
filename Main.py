@@ -18,7 +18,7 @@ def main():
     
     active_sprite_list = pygame.sprite.Group()
     
-    player = Player(350, 350)
+    player = Player(0, 350)
     
     active_sprite_list.add(player)
     
@@ -36,7 +36,7 @@ def main():
     image = pygame.image.load(image_directory)
     movement_speed = -1
     
-    layer = ParallaxLayer( y, image, movement_speed)
+    layer = ParallaxLayer(0, y, image, movement_speed)
     
     layers = ParallaxLayers(SURFACE)
     fill_horizontally = True
@@ -89,12 +89,14 @@ def main():
             f_pressed = False
             
         
-        active_sprite_list.update()
-        
-        SURFACE.fill(pygame.Color(4, 66, 13))    
+        SURFACE.fill(pygame.Color(4, 66, 13))
+        active_sprite_list.update()    
         active_sprite_list.draw(SURFACE)
-        group = background_groups[0]
-        group.draw(SURFACE)
+        
+        
+        for group in background_groups:
+            group.update()
+            group.draw(SURFACE)
             
         fps_clock.tick(FPS)
     
