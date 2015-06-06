@@ -44,7 +44,14 @@ def generate_background(width, height):
     layers.add_layer(layer2, fill_horizontally)
     layers.add_layer(layer3, fill_horizontally)
     
-    return layers
+    # Change the y location to be top of the image.rect so that the 
+    # Player.__floor_boundaries can be changed automatically if they are 
+    # changed in this method.
+    y -= image.get_height()
+    y2 -= image.get_height()
+    y3 -= image.get_height()
+    
+    return (layers, [y, y2, y3])
 
 def main():
     pygame.init()
@@ -56,9 +63,15 @@ def main():
     SURFACE = pygame.display.set_mode((SURFACE_WIDTH, SURFACE_HEIGHT))
     pygame.display.set_caption("Final Project")
     
-    active_sprite_list = pygame.sprite.Group()
+     # Creating the ground layers.
+    (layers, floor_locations) = generate_background(SURFACE_WIDTH, 
+                                                    SURFACE_HEIGHT)
     
-    player = Player(0, 490)
+    background_groups = layers.get_groups()
+    
+    # Creating the player
+    active_sprite_list = pygame.sprite.Group()
+    player = Player(0, 490, floor_locations)
     
     active_sprite_list.add(player)
     
@@ -67,10 +80,7 @@ def main():
     f_pressed = False
     space_bar_pressed = False
     
-    # Creating the ground layers.
-    layers = generate_background(SURFACE_WIDTH, SURFACE_HEIGHT)
-    
-    background_groups = layers.get_groups()
+   
     
     while True: 
         for event in pygame.event.get():    
@@ -86,6 +96,7 @@ def main():
                     print ('s pressed')
                 if event.key == K_f:
                     print ('f pressed')
+                    f_pressed = True
                 if event.key == K_SPACE:
                     space_bar_pressed = True
                     
@@ -98,18 +109,17 @@ def main():
                     s_pressed = True
                 if event.key == K_f:
                     print ('f released')
-                    f_pressed = True
+                    f_pressed = False
                 if event.key == K_SPACE:
                     space_bar_pressed = False
         
         if space_bar_pressed:
             player.jump()
         if s_pressed:
-            player.slow()
             s_pressed = False
-        if f_pressed: 
-            player.speed_up()
-            f_pressed = False
+        if f_pressed:
+            player.drop_down()
+            
         
         SURFACE.fill(pygame.Color(4, 66, 13))
         
