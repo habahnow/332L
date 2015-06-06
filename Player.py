@@ -17,28 +17,39 @@ import pygame
 from spritesheet_functions import SpriteSheet
 import sys
 
+debugging = True
+
 class Player(pygame.sprite.Sprite):
     __highest = []
     __current_frame_reference = 2
     __current_frame = 0
+    __current_floor = 0  
     __gravity = 1
-    __height_change = 0
+    __height_change = 0 # Number of pixels to reduce height by.
+    __level_changed = False 
     __is_jumping = False
-    __jump_height = -20
+    __is_falling = False 
+    __regular_jump_height = -22
     __jump_speed_modifier = 1
-    __movement_frames = []#contains the images for the sprite
+    __movement_frames = [] # Contains the images for the sprite
     __power_ups = []    
     __run_speed = 8
     __run_speed_modifier = 1
     
     
-    def __init__(self, x, y):
+    
+    
+    def __init__(self, x, y, floor_locations):
         """
         Initializes the player class using a passes x and y coordinate
         
         Args:
             x (int): the horizontal location of where the sprite will appear.
             y (int): the vertical location of where the sprite will appear.
+            floor_locations(list): Contains the y coordinates of the different 
+                floors. This reduces the amount of hard coding necessary, and 
+                is used in to set the ground for the Player at different 
+                floors.
             
         Note:
             This init function is very reliant on the image mario_edited.png 
@@ -73,9 +84,32 @@ class Player(pygame.sprite.Sprite):
         #setting the location of rectangle
         self.rect.x = x
         self.rect.y = y
+        
+        # Set the boundaries for the floors.
+        self.__floor_boundaries = floor_locations
+        
     
-   
-    def jump(self):
+    def drop_down(self): 
+        """
+        The command that will make the Player drop down a floor.
+        
+        This method calls on the methods decrement floor to have the Player 
+            drop a floor if the player is not at the lowest floor, or jumping 
+            or already falling.
+            
+        
+        """
+        
+        if debugging:
+            print ('drop down')
+            
+        if (not self.__is_jumping and not self.__is_falling and
+                self.__current_floor != 0):
+            self.image = self.__movement_frames[1]
+            self.decrement_floor()
+            self.__is_falling = True
+        
+    def jump(self, jump_height=__regular_jump_height, normal_jump=True): 
         """
         Moves the character's y locations, making it look like it's jumping.
         
@@ -83,16 +117,14 @@ class Player(pygame.sprite.Sprite):
             player is not, then the image is changed to the jumping image and 
             the height_change variable is set.
         """
-        print ('jump')
-        if not self.__is_jumping:
+        
+        if debugging:
+            print ('jump')
+        
+        if not self.__is_jumping and not self.__is_falling:
             self.image = self.__movement_frames[3]
-            self.__height_change = self.__jump_height
+            self.__height_change = jump_height
             self.__is_jumping = True
-        
-        
-        
-   
-        
         
     def power_up_picked_up(self, new_power_up):
         """
@@ -159,7 +191,6 @@ class Player(pygame.sprite.Sprite):
         
         self.__current_frame_reference = self.__current_frame * self.__run_speed
         
-#         self.__gravity = 2
         
     def update(self):
         """
@@ -172,8 +203,7 @@ class Player(pygame.sprite.Sprite):
             method, that this player is apart of, is called.
         """
         
-#         print ('update')
-        if self.__is_jumping:
+        if self.__is_jumping or self.__is_falling:
             self.__calculate_gravity()
         else:
             self.__run()
@@ -185,6 +215,10 @@ class Player(pygame.sprite.Sprite):
         """
         Causes the character to move towards the ground after jumping.
         
+        Checks if the player rectangle is below the floor boundary of the 
+            current floor. If it is, then the Player is set to the level of the 
+            current floor. Otherwise, the Player gets brought down by gravity.
+        
         The height_change variable modifies the y location of the player. 
             Everytime this method is called, the height_change variable is 
             decremented until this method is not called(when the player reaches
@@ -193,21 +227,57 @@ class Player(pygame.sprite.Sprite):
         The jump_speed_modifier determines the speed in which the player jump
             which creates the illusion of slow motion.
         """
-        print ('calculate_gravity')
         
-        # TODO: change bottom boundary
-        if self.rect.y > 350:  # floor reached
-            self.rect.y = 350
+        # if player is below floor boundary move above floor.
+        if self.rect.y > self.__floor_boundaries[self.__current_floor]:
+            
+            print ('calc gravitiy: ' + str(self.__is_jumping) + str(self.__current_floor))
+            
+            self.rect.y = self.__floor_boundaries[self.__current_floor]
             self.__is_jumping = False
+            self.__is_falling = False
+            self.__level_changed = False
             self.image = self.__movement_frames[2]
             self.__height_change = 0
-            self.__highest.sort()
-            print (self.__highest[0])
+        # Else apply gravity.
         else:
             self.__height_change = self.__height_change + self.__gravity
+            # if player is beginning to fall down/
+            if (self.__height_change >= 0 and self.__is_jumping and 
+                    not self.__level_changed):
+                self.increment_floor()
+                self.__level_changed = True
             self.rect.y = (self.__height_change * self.__jump_speed_modifier 
                            + self.rect.y)
             
+            
+    def __decrement_floor(self): 
+        """ 
+        Decrements the floor that the player is on. 
+        
+        This method is called from other methods and helps to move the Player 
+            a floor below the current one if it exists.
+        
+        Decrements the current_floor but sets it to 0 if it falls below 0.
+        """
+        
+        if debugging:
+            print('decrement floor')
+        self.__current_floor -= 1
+        if self.__current_floor < 0:
+            self.__current_floor = 0
+            
+    def __increment_floor(self): 
+        """
+        Increases the current floor of the Player.
+        
+        Increases the current_floor up to a maximum of 2.
+        """
+        
+        print ('increment floor')
+        self.__current_floor += 1
+        if self.__current_floor > 2:
+            self.__current_floor = 2
     
     def __run(self):
         """
@@ -225,7 +295,9 @@ class Player(pygame.sprite.Sprite):
             converted to an int, it will truncate the value giving us any one 
             value: 0, 1 or 2.
         """
-        # TODO: add run_speed_modifier
+        if debugging:
+            print ('run')
+            
         bound = self.__run_speed * 3
         self.__current_frame_reference = (self.__current_frame_reference +
                                            1) % bound
