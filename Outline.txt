@@ -1,0 +1,205 @@
+player gets points for distance and for enemies killed.
+
+player has a two size queue for powerups, powerup is dequeued when another powerup
+is enqueued
+
+if player already has certain powerups and picks up another copy, extra points
+
+extra points for consecutive repeat pickup of owned powerups or for pickup of 
+powerups the player doesnt have. Might remove the owned powerups bonus.
+
+Enemies:
+rolling enemy, speeds change variably as it approaches.
+enemy with club, when players gets within certain variable distance, dash at player
+spider: jumps at variable intervals 
+
+Powerups:
+powerups are assigned to a button depending on position in queue. the powerup 
+can then be used as many times as the user wants so long as its not on cool down
+which the cool down duration depends on the powerup.
+
+increase speed: enemies and environment move faster meaning the player gets more
+points for distance traveled but at the risk of an enemy damaging/killing the 
+player.
+
+decrease speed: enemies and environment move slower meaning the player is safer 
+but gets less points from distance.
+
+uppercut: deal damage in a short range in front of player then jump into air to 
+deal damage to enemy above player. player can jump after doing an upper cut if they
+have not already.
+
+stomp: jump in the air, stop movement and deal damage to enemies between player 
+and ground as play travels to the ground.
+
+pause time: movement stops but the player is able to move vertically and use 
+powerups. times continues after a certain amount of time has elapsed or if the user
+presses the powerup button.
+
+invincibility: player becomes invincible for a short duration but the user cannot
+kill enemies.
+
+(optional)
+Extra points: player trades a powerup slot for extra points in distance traveled
+and for enemy kills.
+
+(optional)Helicopter: helicopter comes into background and shoots randomly at 
+enemies. Only appears after getting 5 kills.
+
+(optional)Big Ball: automatically kill enemies you come in contact with. The 
+passive auto kill only lasts for a short time.
+
+(optional)
+startMenu
+-outer_frame:Frame
+-inner_frame:Frame
+-Title:Label
+-start_button:Button
+-quit_button:Button
++display():Boolean
+
+
+ParallaxLayer(pygame.Sprites)
+image:Image
+y: int
+-initial_position: int
++movement_rate: int/double
++change_speed():void
++set_position(x):
++update():
+
+ParallaxLayers
+-group_list: List
+-list_of_layers: layers
+-isPaused:boolean
+-isSlow:boolean
+-isFast:boolean
++__init__(self, width, surface):void
++get_groups(): List
++addLayer(ParallaxLayer, height, fill): void
++pause():void
++resume(): void
++update():void
++increase_speed():void
++decrease_speed():void
+
+Player(Sprite)
+-current_frame:int
+-current_floor: int
+-jump_height: int 
+-jump_speed_modifier: double
+-height_change: int
+-level_changed: boolean
+-gravity: int
+-is_jumping:boolean
+-is_falling: boolean
+-powerups: Queue #contains numbers that represent the powerup
+-run_speed:int
+-run_speed_modifier:double
+-x_location:[remove since sprite image will have it]
+-y_location:[remove since sprite image will have it]
+-ignored_collisions:[not added since we will not implement ignoring]
+
++init(x:int, y:int, floor_locations:list)
++drop_down:void
++jump(jump_height):void
++power_up_picked_up(int):int #returned in represents the powerup that was removed
++remove_ignore_collision():void #implement like a queue:[not going to implement]
++slow():void
++speed_up:void
++update():void
+-calculate_gravity():void
+-decrement_floor:void
+-increment_floor:void
+-run:void
++add_ignored_collision(rectangle):void#implement like a queue:[not going to 
+                                                               implement]
+
+Enemy(abstract)
+-spriteImage
+-x_location
+-y_location
++adjust_y():void
++render():void
+-calculate_gravity():void
+
+enemy(pygame.sprite.Sprite)
+-jump_height(optional)
+-SpriteImage
+-x_location
+-y_locations
+-is_jumping
++adjust_y():void
+render():void#calls adjust_movement
+-adjust_movement():void
+-calculate_gravity():void
+-jump:void
+-when_to_jump():void#calls jump
+
+#not sure if i should add a method that keeps track of time. after certain time 
+#interval, change movement speed again.
+RolliePollie(Enemy)
+-SpriteImage
+-x_location
+-y_location
+-change_movement:boolean
++render():void
+-adjust_movement():void
+-change_movement_speed():void
+
+#dont implement below since python doesnt support abstract, instead just use as 
+#guidelines.
+PowerUp(abstract)
+-cool_down
+-id
++execute(item):cool_down # item maybe Player or background or both
++remove(): #use this method to clean up anything from the power up.
++on_cool_down()
++get_cool_down(): time # save the pygame.time.get_ticks() when the power up used, 
+                       # add the cd to this value and return: mentioned value - 
+                       # pygame.time.get_ticks()
+
+
+SpeedTime(PowerUp)
++execute()
+-isActive()
+
+check player collision with platform or powerup:
+required in main file
+
+Display menu:
+enemy_list
+GameLoop:
+  background.render()
+  generate player
+  generate platforms
+  if(len(enemy_list) < max)
+    generate time to spawn next enemy
+    pygame.time.set_timer(spawn_enemy)  
+  generate_power_up
+  check player_collision_platforms
+  check player_collision_enemy  
+  player_power_up_collision
+  increment_distance_points(speed)
+
+
+fast sign:
+http://www.onlineloanbiz.com/images/blog/fast-payday-loan.png
+
+slow sign: 
+cdn-www.i-am-bored.com/media/thumbnails/slow down.jpg
+
+pacman ghost sprite:
+imgarcade.in/1/original-pacman-sprite/
+
+Mario sprite:
+https://s-media-cache-ak0.pinimg.com/736x/d0/5f/08/d05f08b678b09c2f05caa42d3ae2daeb.jpg
+
+ground tiles:
+http://hasgraphics.com/
+
+uppercut image:
+http://news.upperplayground.com/wp-content/uploads/2010/11/GROTESK_UPPERCUT.jpg
+
+stop image:
+http://images.clipartpanda.com/stop-sign-clipart-z7TaM5XiA.pnlow

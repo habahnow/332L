@@ -17,10 +17,9 @@ import pygame
 from spritesheet_functions import SpriteSheet
 import sys
 
-debugging = True
+debugging = False
 
 class Player(pygame.sprite.Sprite):
-    __highest = []
     __current_frame_reference = 2
     __current_frame = 0
     __current_floor = 0  
@@ -106,7 +105,7 @@ class Player(pygame.sprite.Sprite):
         if (not self.__is_jumping and not self.__is_falling and
                 self.__current_floor != 0):
             self.image = self.__movement_frames[1]
-            self.decrement_floor()
+            self.__decrement_floor()
             self.__is_falling = True
         
     def jump(self, jump_height=__regular_jump_height, normal_jump=True): 
@@ -245,7 +244,7 @@ class Player(pygame.sprite.Sprite):
             # if player is beginning to fall down/
             if (self.__height_change >= 0 and self.__is_jumping and 
                     not self.__level_changed):
-                self.increment_floor()
+                self.__increment_floor()
                 self.__level_changed = True
             self.rect.y = (self.__height_change * self.__jump_speed_modifier 
                            + self.rect.y)
