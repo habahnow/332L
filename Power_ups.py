@@ -5,9 +5,10 @@ import sys
 
 debugging = False
 distance_from_floor = 20
-base_movement_speed = 8
+base_movement_speed = 10
 
 class Fast(pygame.sprite.Sprite):
+    id = 0
     __gravity = 1
     __movement_counter = 0
     __movement_counter_boundary = 2
@@ -51,6 +52,7 @@ class Fast(pygame.sprite.Sprite):
                 self.rect.left -= self.__movement_speed
         
 class Slow(pygame.sprite.Sprite):
+    id = 1
     __gravity = 1
     __movement_counter = 0
     __movement_counter_boundary = 2
@@ -95,6 +97,7 @@ class Slow(pygame.sprite.Sprite):
                 self.rect.left -= self.__movement_speed
             
 class UpperCut(pygame.sprite.Sprite):
+    id = 2
     __gravity = 1
     __movement_counter = 0
     __movement_counter_boundary = 2
@@ -140,6 +143,7 @@ class UpperCut(pygame.sprite.Sprite):
     
         
 class Stomp(pygame.sprite.Sprite):
+    id = 3
     __gravity = 1
     __movement_counter = 0
     __movement_counter_boundary = 2

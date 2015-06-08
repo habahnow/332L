@@ -14,7 +14,9 @@ import sys
 from pygame.locals import *
 
 class ParallaxLayer(pygame.sprite.Sprite):
-   
+    is_fast = False
+    is_slow = False
+    __update_speed_counter = 0
     
     def __init__(self,x, y, image, movement_rate):
         """
@@ -34,6 +36,7 @@ class ParallaxLayer(pygame.sprite.Sprite):
         self.__initial_position = x
         
         self.movement_rate = movement_rate
+        self.__initial_movement_rate = movement_rate
         
         self.image = image
         self.rect = self.image.get_rect()
@@ -42,10 +45,24 @@ class ParallaxLayer(pygame.sprite.Sprite):
         self.width = self.rect.width
         
     def change_speed(self, x):
-        self.movement_rate *= x
+        self.movement_rate = int(self.movement_rate * x)
+        
+    def normalize_speed(self):
+        self.movement_rate = self.__initial_movement_rate
+        
+        self.is_fast = False
+        self.is_slow = False
+        
+        self.__update_speed_counter = 0
     
     def set_position(self, x):
         self.rect.left = x
+        
+    def speed_up(self):
+        self.is_fast = True
+        
+    def slow_down(self):
+        self.is_slow = True
         
     def update(self):
         """
@@ -55,12 +72,17 @@ class ParallaxLayer(pygame.sprite.Sprite):
             also x, to initial_position - (this-image's-width - 1). Uses the 
             set_position method if it reaches its boundary. 
         """
+        
         next_position = self.rect.x + self.movement_rate
         if next_position <= self.__initial_position - self.rect.width:
             self.set_position(self.rect.left + self.rect.width)
         else:
             self.rect.left += self.movement_rate
        
+        if self.is_fast:
+            self.__update_speed_counter += 1 
+            if self.__update_speed_counter % 2 == 1:
+                self.update()
        
 """
 The ParallaxLayers class
@@ -110,20 +132,14 @@ class ParallaxLayers():
                 group.add(new_layer)
                 layers.append(new_layer)
             self.__group_list.append(group)
-            self.__list_of_layers.append(layers) 
-        
-    def decrease_speed(self):
-        print ('decrease speed')
-        
+            self.__list_of_layers.append(layers)
+             
     def get_groups(self):
         return self.__group_list[:]
+    
+    def normalize_speed(self):
+        for floor in self.__list_of_layers:
+            for layer in floor:
+                layer.normalize_speed()
         
-    def increase_speed(self):
-        print ('increase speed')
-        
-    def pause(self):
-        print ('pause')
-        
-    def resume(self):
-        print ('resume')
-       
+ 

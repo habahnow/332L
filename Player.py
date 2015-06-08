@@ -17,9 +17,18 @@ import pygame
 from spritesheet_functions import SpriteSheet
 import sys
 
-debugging = False
+debugging = True
 
 class Player(pygame.sprite.Sprite):
+    fast_on_cd = False
+    slow_on_cd = False
+    upper_cut_on_cd = False
+    stomp_on_cd = False
+    is_fast = False
+    is_slow = False
+    is_stomping = False
+    is_uppercutting = False
+    power_ups = []    
     __current_frame_reference = 2
     __current_frame = 0
     __current_floor = 0  
@@ -31,9 +40,8 @@ class Player(pygame.sprite.Sprite):
     __regular_jump_height = -22
     __jump_speed_modifier = 1
     __movement_frames = [] # Contains the images for the sprite
-    __power_ups = []    
     __run_speed = 8
-    __run_speed_modifier = 1
+    __run_speed_modifier = 5
     
     
     
@@ -99,7 +107,7 @@ class Player(pygame.sprite.Sprite):
         
         """
         
-        if debugging:
+        if not debugging:
             print ('drop down')
             
         if (not self.__is_jumping and not self.__is_falling and
@@ -117,13 +125,18 @@ class Player(pygame.sprite.Sprite):
             the height_change variable is set.
         """
         
-        if debugging:
+        if not debugging:
             print ('jump')
         
         if not self.__is_jumping and not self.__is_falling:
             self.image = self.__movement_frames[3]
             self.__height_change = jump_height
             self.__is_jumping = True
+            
+    def normalize_speed(self):
+        self.__run_speed = 8
+        self.is_fast = False
+        self.is_slow = False
         
     def power_up_picked_up(self, new_power_up):
         """
@@ -139,17 +152,17 @@ class Player(pygame.sprite.Sprite):
         Args:
             new_power_up(int): integer id of the power up that was picked up.    
         """
+        if not debugging:
+            print ('picked up power up')
         
-        print ('picked up power up')
-        
-        if len(self.__power_ups) == 2:
-            removed_power_up = self.__power_ups.pop(0)
+        if len(self.power_ups) == 2:
+            removed_power_up = self.power_ups.pop(0)
         else:
             removed_power_up = 0
-        self.__power_ups.append(new_power_up)
+        self.power_ups.append(new_power_up)
         return removed_power_up
         
-    def slow(self):
+    def slow_down(self):
         """
         Reduces the run_speed and jump_speed_modifier. 
         
@@ -164,12 +177,13 @@ class Player(pygame.sprite.Sprite):
             based off of the current frame before this method is called.
         
         """
-        
-        self.__run_speed += self.__run_speed_modifier
-        
-        self.__current_frame_reference = self.__current_frame * self.__run_speed
-        
-#         self.__gravity = .5
+        if not self.is_slow:
+            self.is_slow = True
+#         self.__run_speed += self.__run_speed_modifier
+#         
+#         self.__current_frame_reference = self.__current_frame * self.__run_speed
+#         
+# #         self.__gravity = .5
         
     def speed_up(self):
         """
@@ -185,10 +199,11 @@ class Player(pygame.sprite.Sprite):
             0 =< x < 3(number of frames) * run_speed
             based off of the current frame before this method is called. 
         """
-        
-        self.__run_speed -= self.__run_speed_modifier
-        
-        self.__current_frame_reference = self.__current_frame * self.__run_speed
+        if not self.is_fast:
+            self.is_fast = True
+#             self.__run_speed -= self.__run_speed_modifier
+         
+#             self.__current_frame_reference = self.__current_frame * self.__run_speed
         
         
     def update(self):
@@ -206,8 +221,68 @@ class Player(pygame.sprite.Sprite):
             self.__calculate_gravity()
         else:
             self.__run()
+            
+    def uppercut(self):
+        if debugging:
+            print ('uppercut')
         
-    
+    def use_power_up(self, key_id):
+        """
+            0 is the fast power up
+            1 is the slow power up
+            2 is the uppercut
+            3 is the stomp power up
+        """
+        if len(self.power_ups) == 0:
+            print ('no powerups')
+            return (0,0,False)
+        elif self.power_ups[key_id] == 0:
+            if debugging:
+                print ('power is 0')
+                
+            if not self.is_fast and not self.fast_on_cd:
+                self.speed_up()
+            
+                # Return active time in milliseconds, power_up reference, and 
+                # if the power_up was used.
+                return (8000, 0, True)
+            else:
+                return (0, 0, False)
+        
+        elif self.power_ups[key_id] == 1:
+            if debugging:
+                print ('power is 1')
+            
+            if not self.is_slow and not self.slow_on_cd:
+                self.slow_down()  
+                
+                return (8000, 1, True)
+            else:
+                return (0,1, False)
+                
+        elif self.power_ups[key_id] == 2:
+            if debugging:
+                print ('power is 2')
+                
+            if (not self.__is_jumping and not self.__is_falling and 
+                    not self.is_stomping and not self.upper_cut_on_cd):
+                self.uppercut()
+                
+                return (0, 2, True)
+            else:
+                return (0, 2, False)
+                
+        elif self.power_ups[key_id] == 3:
+            if debugging:
+                print ('power is 3')
+            
+            if (not self.__is_jumping and not self.__is_falling and 
+                    not self.is_stomping and not self.stomp_on_cd):
+                self.stomp()
+                
+                return (0, 3, True)
+            else:
+                return (0,3,False)
     
     
     def __calculate_gravity(self):
@@ -258,7 +333,7 @@ class Player(pygame.sprite.Sprite):
         Decrements the current_floor but sets it to 0 if it falls below 0.
         """
         
-        if debugging:
+        if not debugging:
             print('decrement floor')
         self.__current_floor -= 1
         if self.__current_floor < 0:
@@ -270,7 +345,7 @@ class Player(pygame.sprite.Sprite):
         
         Increases the current_floor up to a maximum of 2.
         """
-        if debugging: 
+        if not debugging: 
             print ('increment floor')
         self.__current_floor += 1
         if self.__current_floor > 2:
@@ -292,7 +367,7 @@ class Player(pygame.sprite.Sprite):
             converted to an int, it will truncate the value giving us any one 
             value: 0, 1 or 2.
         """
-        if debugging:
+        if not debugging:
             print ('run')
             
         bound = self.__run_speed * 3
