@@ -230,8 +230,6 @@ class Player(pygame.sprite.Sprite):
         # if player is below floor boundary move above floor.
         if self.rect.y > self.__floor_boundaries[self.__current_floor]:
             
-            print ('calc gravitiy: ' + str(self.__is_jumping) + str(self.__current_floor))
-            
             self.rect.y = self.__floor_boundaries[self.__current_floor]
             self.__is_jumping = False
             self.__is_falling = False
@@ -272,8 +270,8 @@ class Player(pygame.sprite.Sprite):
         
         Increases the current_floor up to a maximum of 2.
         """
-        
-        print ('increment floor')
+        if debugging: 
+            print ('increment floor')
         self.__current_floor += 1
         if self.__current_floor > 2:
             self.__current_floor = 2

@@ -11,7 +11,7 @@ class Ghost(pygame.sprite.Sprite):
     __current_frame_reference = 0
     __movement_counter = 0
     __movement_counter_boundary = 2
-    __movement_speed = 12
+    __movement_speed = 24
             
     def __init__(self, x, y):
         """
