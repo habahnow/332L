@@ -21,8 +21,8 @@ def generate_background(width, height):
         well as setting the location of the platforms and the initial speed.
     """
     movement_speed1 = -5
-    movement_speed2 = -3
-    movement_speed3 = -1
+    movement_speed2 = -5
+    movement_speed3 = -5
     
     script_dir = sys.path[0]
     image_location = 'Sprites/ground3.bmp'
@@ -74,16 +74,17 @@ def main():
     
     # Creating the player
     active_sprite_list = pygame.sprite.Group()
-    player = Player(0, 490, floor_locations)
+    active_player = pygame.sprite.Group()
+    player = Player(10, 490, floor_locations)
     
-    active_sprite_list.add(player)
+    active_player.add(player)
     
     # Creating powerups and baddies.
     start_position = 1000
     
     # Generating ghosts
     active_ghosts = 0
-    total_ghosts = 5
+    total_ghosts = 10
     ghost_list = []
     
     
@@ -93,7 +94,7 @@ def main():
     TIMER = USEREVENT + 3 #TODO: 
     
     # Setting the initial spawn times for enemies and powerups
-    enemy_spawn_time = random.randint(5000, 8000)
+    enemy_spawn_time = random.randint(2000, 4000)
     powerup_spawn_time = random.randint(5000, 10000)
     
     pygame.time.set_timer(SPAWN_GHOST, enemy_spawn_time)
@@ -145,7 +146,7 @@ def main():
                     active_sprite_list.add(ghost)
                     ghost_list.append(ghost)
                     active_ghosts += 1
-                enemy_spawn_time = random.randint(2000, 4000)
+                enemy_spawn_time = random.randint(500, 2000)
                 pygame.time.set_timer(SPAWN_GHOST, enemy_spawn_time)
                 
                 
@@ -184,7 +185,15 @@ def main():
         active_sprite_list.update()    
         active_sprite_list.draw(SURFACE)
         
-       
+        active_player.update()
+        active_player.draw(SURFACE)
+        
+        # check if player collides with ghosts.
+        enemy_collisions = pygame.sprite.spritecollide(player, active_sprite_list, 
+                                                 True)
+        
+        if enemy_collisions:
+            pygame.time.delay(1000)
         
             
         fps_clock.tick(FPS)
